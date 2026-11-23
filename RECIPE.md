@@ -1,4 +1,4 @@
-# Agora Vehicle Service Demo
+# Agora Auto Service Advisor Demo
 
 ## 1. What you build
 

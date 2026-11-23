@@ -1,4 +1,4 @@
-# Vehicle Service architecture
+# Auto Service Advisor architecture
 
 The browser uses Agora RTC for media and RTM for transcripts and Agent events. Next.js routes sign tokens and start or stop the managed Agent. The Invite route supplies the scenario prompt and uses the empty list from `lib/agent-tools.ts`.
 

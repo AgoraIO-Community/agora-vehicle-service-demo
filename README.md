@@ -1,4 +1,4 @@
-# Agora Vehicle Service Demo
+# Agora Auto Service Advisor Demo
 
 Describe a vehicle issue and prepare a service visit request. This browser demo uses Agora Conversational AI and fictional reference material. Its output is a spoken draft for the current conversation.
 
