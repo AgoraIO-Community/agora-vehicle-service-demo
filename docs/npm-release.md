@@ -24,7 +24,7 @@ Real environment files, dependencies, caches and local evidence are excluded. Do
 An npm package owner must configure a Trusted Publisher for `agora-vehicle-service-demo` on npm:
 
 - Provider: GitHub Actions.
-- Organization: `littleDogWang`.
+- Organization: `AgoraIO-Community`.
 - Repository: `agora-vehicle-service-demo`.
 - Workflow filename: `npm-release.yml`.
 - Environment: leave blank; this workflow does not select an environment.
@@ -39,9 +39,9 @@ The release workflow publishes the generated scaffold publicly. Review the packa
 ## Release contract
 
 1. Set `package.json` to a new stable X.Y.Z version. Keep the application private.
-2. Review and merge the intended source into the repository's `private` branch.
+2. Review and merge the intended source into the repository's `main` branch.
 3. Create and push a matching `vX.Y.Z` tag at that commit, only after obtaining authorization for those Git operations.
-4. The workflow requires an exact version match, a clean checkout and a commit reachable from the repository's `private` branch.
+4. The workflow requires an exact version match, a clean checkout and a commit reachable from the repository's `main` branch.
 5. It builds one tarball, tests the installed creator and runs the generated application's full verification.
 6. A separate job downloads that artifact and publishes those exact bytes to npm using GitHub OIDC. npm generates provenance when the source repository and package are public.
 

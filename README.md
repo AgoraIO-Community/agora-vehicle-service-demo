@@ -33,4 +33,4 @@ Run `pnpm run verify` for the template checks, mocked API contracts and producti
 
 Scenario inspiration is from [LiveKit's homepage examples](https://github.com/livekit/agents/tree/main/examples/homepage). This implementation uses original prompts and fictional fixtures with the Agora Top-10 template.
 
-Maintainers can build and test the npm scaffold with `pnpm run npm:test`. See the [npm and Vercel setup](https://github.com/littleDogWang/agora-vehicle-service-demo/blob/private/docs/npm-release.md).
+Maintainers can build and test the npm scaffold with `pnpm run npm:test`. See the [npm and Vercel setup](https://github.com/AgoraIO-Community/agora-vehicle-service-demo/blob/main/docs/npm-release.md).

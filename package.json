@@ -1,6 +1,6 @@
 {
   "name": "agora-vehicle-service-demo",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Describe a vehicle issue and prepare a service visit request.",
   "private": true,
   "engines": {
@@ -68,10 +68,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/littleDogWang/agora-vehicle-service-demo.git"
+    "url": "git+https://github.com/AgoraIO-Community/agora-vehicle-service-demo.git"
   },
-  "homepage": "https://github.com/littleDogWang/agora-vehicle-service-demo#readme",
+  "homepage": "https://github.com/AgoraIO-Community/agora-vehicle-service-demo#readme",
   "bugs": {
-    "url": "https://github.com/littleDogWang/agora-vehicle-service-demo/issues"
+    "url": "https://github.com/AgoraIO-Community/agora-vehicle-service-demo/issues"
   }
 }

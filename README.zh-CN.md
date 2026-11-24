@@ -23,4 +23,4 @@ pnpm dev
 
 试说「My 2021 hatchback rattles over bumps. Can I drop it off Tuesday morning?」，再把时间改为周四下午。 最后请助手复述修改后的草稿。
 
-用 `pnpm run verify` 验证模板、模拟 API 和生产构建。用实际浏览器通话验证语音行为。场景说明见 [RECIPE.md](RECIPE.md)。维护说明见 [npm 和 Vercel 配置](https://github.com/littleDogWang/agora-vehicle-service-demo/blob/private/docs/npm-release.md)。
+用 `pnpm run verify` 验证模板、模拟 API 和生产构建。用实际浏览器通话验证语音行为。场景说明见 [RECIPE.md](RECIPE.md)。维护说明见 [npm 和 Vercel 配置](https://github.com/AgoraIO-Community/agora-vehicle-service-demo/blob/main/docs/npm-release.md)。

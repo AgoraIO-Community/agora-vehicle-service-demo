@@ -23,4 +23,4 @@ pnpm dev
 
 「My 2021 hatchback rattles over bumps. Can I drop it off Tuesday morning?」と話し、希望を木曜日の午後に変更してみてください。 最後に、更新した内容の要約を依頼してください。
 
-`pnpm run verify` でテンプレート、モック API、本番ビルドを検証できます。音声の動作はブラウザーで実際に通話して確認します。[シナリオの説明](RECIPE.md)と[npm・Vercel の設定](https://github.com/littleDogWang/agora-vehicle-service-demo/blob/private/docs/npm-release.md)も参照してください。
+`pnpm run verify` でテンプレート、モック API、本番ビルドを検証できます。音声の動作はブラウザーで実際に通話して確認します。[シナリオの説明](RECIPE.md)と[npm・Vercel の設定](https://github.com/AgoraIO-Community/agora-vehicle-service-demo/blob/main/docs/npm-release.md)も参照してください。

@@ -22,7 +22,7 @@ try {
     if (args[1] !== `v${pkg.version}`) throw new Error('Tag must exactly match the package version.');
     if (sourceDirty) throw new Error('Release requires a clean checkout.');
     if (git('rev-parse', `${args[1]}^{commit}`) !== sourceCommit) throw new Error('Tag must point to the checked-out commit.');
-    git('merge-base', '--is-ancestor', sourceCommit, 'origin/private');
+    git('merge-base', '--is-ancestor', sourceCommit, 'origin/main');
   }
   const tracked = git('ls-files', '-z').split('\0').filter(Boolean);
   const selected = tracked.filter(file => {
