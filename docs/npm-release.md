@@ -47,11 +47,11 @@ The release workflow publishes the generated scaffold publicly. Review the packa
 
 The canonical repository guard prevents personal mirrors and generated forks from publishing this package. Existing versions are immutable; a duplicate version fails. If publishing fails after verification, rerun only the publish job to consume the same retained artifact (7 days). If the artifact is gone or source changes, prepare a new version rather than rebuilding an approved artifact invisibly. A workflow rerun is a remote write and needs separate authorization.
 
-A relevant `private` update deploys the website independently of npm publication. A failed npm publish does not roll back Vercel.
+A relevant update to the Community `main` branch deploys the website independently of npm publication. A failed npm publish does not roll back Vercel.
 
 ## Production website deployment with GitHub Actions
 
-`.github/workflows/deploy.yml` deploys the Vercel project configured for `agora-vehicle-service-demo`. Keep Vercel native Git deployment disconnected: it would bypass this workflow's file filters and verification gate. This workflow deploys production from `private` only. It does not deploy feature branches, PRs, forks or generated repositories.
+`.github/workflows/deploy.yml` deploys the Vercel project configured for `agora-vehicle-service-demo`. Keep Vercel native Git deployment disconnected: it would bypass this workflow's file filters and verification gate. This workflow deploys production from `AgoraIO-Community/agora-vehicle-service-demo` on `main`. It does not deploy feature branches, PRs, forks or generated repositories.
 
 Configure these repository Actions settings:
 
@@ -61,13 +61,13 @@ Configure these repository Actions settings:
 | Secret | `NEXT_PUBLIC_AGORA_APP_ID` | The actual public App ID matching the Vercel production project |
 | Variable | `VERCEL_ORG_ID` | Vercel team or account ID |
 | Variable | `VERCEL_PROJECT_ID` | Vercel project ID |
-| Variable | `VERCEL_PRODUCTION_URL` | Optional production alias, including `https://` |
+| Variable | `VERCEL_PRODUCTION_URL` | Optional production alias override. Defaults to `https://agora-vehicle-service-demo.vercel.app` |
 
 Keep the real App Certificate and optional vendor credentials in Vercel's Production environment. Do not copy them into the workflow, repository or GitHub Secrets. `NEXT_PUBLIC_AGORA_APP_ID` is public and inlined into browser code at build time; supply its actual value through the GitHub Secret named above and retain the matching value in Vercel for server runtime. The verification job uses synthetic credentials on its own runner. A separate deployment runner builds with the actual public App ID, then uploads prebuilt output. The real App Certificate is read only when server requests run on Vercel. Environment values are not downloaded to Actions.
 
 ### Automatic and manual triggers
 
-Only pushes to `private` with a matching changed path trigger deployment:
+Only pushes to Community `main` with a matching changed path trigger deployment:
 
 - Runtime and static assets: `app/`, `components/`, `lib/`, `types/`, `styles/`, `public/`.
 - Verification and build scripts: `scripts/`.
@@ -77,7 +77,7 @@ Only pushes to `private` with a matching changed path trigger deployment:
 
 README, `docs/`, license and other documentation-only updates do not trigger this workflow. A mixed README/source update does. Assets must live in `public/` to count as deployable assets; `docs/recipe-cover.webp` is a repository illustration. New runtime directories or configuration filenames require updating the path list. GitHub evaluates at most 300 changed files for path filters; a change outside that evaluated list may be missed. Use the manual trigger if necessary. GitHub may run a workflow without path filtering for pushes exceeding 1,000 commits or diff timeouts.
 
-To deploy explicitly (including after production environment changes), open **Actions → Deploy production website → Run workflow** and select **private**. There is no environment selector or separate Preview step. Manual runs use the same verification, production build, artifact integrity and deployment checks as automatic runs. Other branches and noncanonical repositories are skipped by the verification job guard, and the dependent deployment job cannot run without successful verification.
+To deploy explicitly (including after production environment changes), open **Actions → Deploy production website → Run workflow** and select **main**. There is no environment selector or separate Preview step. Manual runs use the same verification, production build, artifact integrity and deployment checks as automatic runs. Other branches and noncanonical repositories are skipped by the verification job guard, and the dependent deployment job cannot run without successful verification.
 
 Manual dispatch, push, PR updates and merging are distinct remote writes that require their own authorization. The existing standalone CI workflow still runs independently; the deployment workflow calls CI again to gate its exact revision without granting the verifier deployment secrets.
 
@@ -91,7 +91,7 @@ Keep repository build settings aligned with the Vercel project. The local file i
 
 CLI `build --standalone` is required for portable prebuilt output. Without it, CLI 58.4.4 can emit function `filePathMap` entries referring to files under the build workspace's node_modules and .next directories. Those files can exist locally while being absent from the uploaded output; Vercel then fails with ENOENT while assembling functions. This CLI flag is separate from Next.js's `output: 'standalone'` setting. The workflow rejects nonempty function filePathMap entries, missing handlers and links outside the output directory before uploading.
 
-Missing configuration, verification failures and Vercel errors fail the workflow. Verification/build failures occur before publication. Once Vercel publishes successfully, the exact deployment URL must return HTTP 200 for the page and `/api/generate-agora-token`; redirects do not pass these checks. The second check cold-starts the server and exercises runtime credential availability without starting an Agent or making a voice or model request; its token response is discarded. If configured, the production alias is also checked. The run summary records the source revision and deployment URL. HTTP success does not establish human microphone/voice behavior, live model behavior or version equality at the public alias. Those need separate online acceptance.
+Missing configuration, verification failures and Vercel errors fail the workflow. Verification/build failures occur before publication. After Vercel publishes, the public production alias must return HTTP 200 for the page and `/api/generate-agora-token`. The deployment-specific URL can require Vercel sign-in, so the public checks use the production alias. The second check cold-starts the server and exercises runtime credential availability without starting an Agent or making a voice or model request; its token response is discarded. The run summary records the source revision and deployment URL. HTTP success does not establish human microphone/voice behavior, live model behavior or version equality at the public alias. Those need separate online acceptance.
 
 A failed post-publication check does not roll back automatically. Inspect the Actions/Vercel logs, then explicitly authorize a rollback to a known-good deployment in Vercel or revert the faulty source and deploy again. A workflow rerun can deploy its original revision, so inspect that revision before rerunning an older deployment.
 
