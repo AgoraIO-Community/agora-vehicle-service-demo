@@ -1,0 +1,98 @@
+# npm scaffold releases and Vercel automation
+
+This repository contains both a private Next.js application and the tools for publishing a public project creator. The application package stays private. `pnpm run npm:build` creates a separate npm package in `dist/`; it never publishes. No surrounding workspace or shared generator is required.
+
+## Local checks
+
+Use Node.js 24 and pnpm 9.15.9:
+
+```bash
+pnpm run npm:test
+node scripts/npm/test.mjs --application
+```
+
+The first command builds a tarball and executes its installed CLI through offline npm exec. It checks file hashes, dotfiles, licenses, executable permissions, new/empty destinations and refusal of occupied directories and symlinks. The second also installs dependencies and runs the generated application's complete verification with synthetic credentials. It does not contact live Agora services for acceptance testing.
+
+Only allowlisted source files are included. The application template contains runtime source, assets, application configuration, environment examples, user/contributor documents, licenses and the explicitly selected general CI and Docker workflows. It excludes `scripts/npm/`, `.github/workflows/npm-release.yml`, `.github/workflows/deploy.yml` and this maintainer-only document. Other workflows are excluded unless explicitly allowlisted. The creator itself remains in the outer package's `bin/`; generated applications do not contain a second creator or publication toolchain.
+
+The generated `package.json` omits `npm:build` and `npm:test`, and its CI omits the upstream scaffold test step. Other application scripts and application verification remain unchanged. Maintainer links in generated documentation point to the upstream GitHub document. Tests verify the excluded files and scripts, retained workflows, generated-document links and checksums of the final template bytes.
+
+Real environment files, dependencies, caches and local evidence are excluded. Dot-prefixed template paths are encoded during packaging and restored on creation. The package includes source revision metadata and file checksums. A local build includes changes to tracked source files and is marked dirty when the checkout has changes; newly untracked files are not included. Release builds require a clean checkout.
+
+## One-time npm setup
+
+An npm package owner must configure a Trusted Publisher for `agora-vehicle-service-demo` on npm:
+
+- Provider: GitHub Actions.
+- Organization: `littleDogWang`.
+- Repository: `agora-vehicle-service-demo`.
+- Workflow filename: `npm-release.yml`.
+- Environment: leave blank; this workflow does not select an environment.
+- Allowed actions: enable `npm publish`; leave `npm dist-tag` disabled. The workflow publishes directly rather than staging a release.
+
+A newly saved connection may show Pending validation. Complete the first successful publication before the deadline shown by npm to validate the connection. Saving the settings alone does not establish a successful OIDC release.
+
+The workflow uses a GitHub-hosted Linux runner, Node.js 24, npm 11 and OIDC (`id-token: write`). It does not require an npm token in GitHub secrets. Package ownership, existing versions and Trusted Publisher configuration must be checked separately; local builds do not establish those permissions. New package names may need a separately authorized initial publication before an owner can configure trust.
+
+The release workflow publishes the generated scaffold publicly. Review the package files and confirm npm ownership before creating the first release tag.
+
+## Release contract
+
+1. Set `package.json` to a new stable X.Y.Z version. Keep the application private.
+2. Review and merge the intended source into the repository's `private` branch.
+3. Create and push a matching `vX.Y.Z` tag at that commit, only after obtaining authorization for those Git operations.
+4. The workflow requires an exact version match, a clean checkout and a commit reachable from the repository's `private` branch.
+5. It builds one tarball, tests the installed creator and runs the generated application's full verification.
+6. A separate job downloads that artifact and publishes those exact bytes to npm using GitHub OIDC. npm generates provenance when the source repository and package are public.
+
+The canonical repository guard prevents personal mirrors and generated forks from publishing this package. Existing versions are immutable; a duplicate version fails. If publishing fails after verification, rerun only the publish job to consume the same retained artifact (7 days). If the artifact is gone or source changes, prepare a new version rather than rebuilding an approved artifact invisibly. A workflow rerun is a remote write and needs separate authorization.
+
+A relevant `private` update deploys the website independently of npm publication. A failed npm publish does not roll back Vercel.
+
+## Production website deployment with GitHub Actions
+
+`.github/workflows/deploy.yml` deploys the Vercel project configured for `agora-vehicle-service-demo`. Keep Vercel native Git deployment disconnected: it would bypass this workflow's file filters and verification gate. This workflow deploys production from `private` only. It does not deploy feature branches, PRs, forks or generated repositories.
+
+Configure these repository Actions settings:
+
+| Type | Name | Value |
+| --- | --- | --- |
+| Secret | `VERCEL_TOKEN` | A token permitted to read and deploy this project |
+| Secret | `NEXT_PUBLIC_AGORA_APP_ID` | The actual public App ID matching the Vercel production project |
+| Variable | `VERCEL_ORG_ID` | Vercel team or account ID |
+| Variable | `VERCEL_PROJECT_ID` | Vercel project ID |
+| Variable | `VERCEL_PRODUCTION_URL` | Optional production alias, including `https://` |
+
+Keep the real App Certificate and optional vendor credentials in Vercel's Production environment. Do not copy them into the workflow, repository or GitHub Secrets. `NEXT_PUBLIC_AGORA_APP_ID` is public and inlined into browser code at build time; supply its actual value through the GitHub Secret named above and retain the matching value in Vercel for server runtime. The verification job uses synthetic credentials on its own runner. A separate deployment runner builds with the actual public App ID, then uploads prebuilt output. The real App Certificate is read only when server requests run on Vercel. Environment values are not downloaded to Actions.
+
+### Automatic and manual triggers
+
+Only pushes to `private` with a matching changed path trigger deployment:
+
+- Runtime and static assets: `app/`, `components/`, `lib/`, `types/`, `styles/`, `public/`.
+- Verification and build scripts: `scripts/`.
+- Dependencies and runtime: `package.json`, `pnpm-lock.yaml`, `.npmrc`, `.nvmrc`.
+- Build and verification configuration: `next.config.*`, `next-env.d.ts`, `tsconfig.json`, `postcss.config.*`, `tailwind.config.*`, `eslint.config.*`, `vercel.json`, `.vercelignore`.
+- Deployment and reusable verification workflows: `.github/workflows/deploy.yml`, `.github/workflows/ci.yml`.
+
+README, `docs/`, license and other documentation-only updates do not trigger this workflow. A mixed README/source update does. Assets must live in `public/` to count as deployable assets; `docs/recipe-cover.webp` is a repository illustration. New runtime directories or configuration filenames require updating the path list. GitHub evaluates at most 300 changed files for path filters; a change outside that evaluated list may be missed. Use the manual trigger if necessary. GitHub may run a workflow without path filtering for pushes exceeding 1,000 commits or diff timeouts.
+
+To deploy explicitly (including after production environment changes), open **Actions → Deploy production website → Run workflow** and select **private**. There is no environment selector or separate Preview step. Manual runs use the same verification, production build, artifact integrity and deployment checks as automatic runs. Other branches and noncanonical repositories are skipped by the verification job guard, and the dependent deployment job cannot run without successful verification.
+
+Manual dispatch, push, PR updates and merging are distinct remote writes that require their own authorization. The existing standalone CI workflow still runs independently; the deployment workflow calls CI again to gate its exact revision without granting the verifier deployment secrets.
+
+### Build, acceptance and recovery
+
+The workflow calls the existing CI workflow, including `pnpm run verify` and `pnpm run npm:test`. Deployment waits for successful verification, then uses Node.js 24, pnpm 9.15.9 and Vercel CLI 58.4.4. It generates `.vercel/project.json` from the project identifiers, `package.json` and the relevant `vercel.json` settings; no `vercel pull` is needed. It builds with `vercel build --prod --standalone` using the actual public App ID from GitHub, checks that the output is self-contained, then uploads with `vercel deploy --prebuilt --prod`. The command waits for deployment completion; source commit and repository metadata identify the uploaded revision. Production runs are serialized, and an active run is not canceled by a newer request. A newer queued run can replace an older pending run under GitHub's concurrency rules; runs are not a guaranteed FIFO queue.
+
+CLI 58.4.4's pull resolver requires team metadata; a project-scoped token can return project HTTP 200 but team HTTP 403 (`team_unauthorized`), causing pull to fail before building. Complete local settings let build skip that resolver. The deploy path, including prebuilt deployment, allows unavailable team metadata when the project lookup succeeds. A denied project lookup still fails. This does not establish the token's publication permissions; a live run must verify those separately.
+
+Keep repository build settings aligned with the Vercel project. The local file includes the framework, Node version, root directory and install/build/output settings; new relevant project settings need to be reflected in the configuration step. Runtime secrets remain owned by Vercel. A live run verifies permissions for the configured project.
+
+CLI `build --standalone` is required for portable prebuilt output. Without it, CLI 58.4.4 can emit function `filePathMap` entries referring to files under the build workspace's node_modules and .next directories. Those files can exist locally while being absent from the uploaded output; Vercel then fails with ENOENT while assembling functions. This CLI flag is separate from Next.js's `output: 'standalone'` setting. The workflow rejects nonempty function filePathMap entries, missing handlers and links outside the output directory before uploading.
+
+Missing configuration, verification failures and Vercel errors fail the workflow. Verification/build failures occur before publication. Once Vercel publishes successfully, the exact deployment URL must return HTTP 200 for the page and `/api/generate-agora-token`; redirects do not pass these checks. The second check cold-starts the server and exercises runtime credential availability without starting an Agent or making a voice or model request; its token response is discarded. If configured, the production alias is also checked. The run summary records the source revision and deployment URL. HTTP success does not establish human microphone/voice behavior, live model behavior or version equality at the public alias. Those need separate online acceptance.
+
+A failed post-publication check does not roll back automatically. Inspect the Actions/Vercel logs, then explicitly authorize a rollback to a known-good deployment in Vercel or revert the faulty source and deploy again. A workflow rerun can deploy its original revision, so inspect that revision before rerunning an older deployment.
+
+Local workflow validation does not establish live token permissions, successful production builds or end-to-end voice behavior. First deployment and a subsequent source update must be observed online before calling automatic deployment verified.

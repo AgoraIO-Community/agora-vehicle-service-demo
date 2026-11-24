@@ -20,7 +20,9 @@
     "verify:docker": "node scripts/verify-docker.mjs",
     "verify:signal": "node --import tsx scripts/verify-signal-states.ts",
     "verify:inspection": "node --import tsx scripts/verify-inspection.ts",
-    "verify:conversation": "node --import tsx scripts/verify-conversation-only.ts"
+    "verify:conversation": "node --import tsx scripts/verify-conversation-only.ts",
+    "npm:build": "node scripts/npm/build.mjs",
+    "npm:test": "node scripts/npm/test.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "^2.1.4",
@@ -63,5 +65,13 @@
     "overrides": {
       "@typescript-eslint/typescript-estree>minimatch": "11.0.1"
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/littleDogWang/agora-vehicle-service-demo.git"
+  },
+  "homepage": "https://github.com/littleDogWang/agora-vehicle-service-demo#readme",
+  "bugs": {
+    "url": "https://github.com/littleDogWang/agora-vehicle-service-demo/issues"
   }
 }
